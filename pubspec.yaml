@@ -15,6 +15,9 @@ dependencies:
   flutter_svg: ^2.0.16
   smooth_page_indicator: ^1.2.0
   lottie: ^3.3.1
+  image_picker: ^1.1.2
+  pdf: ^3.13.0
+  printing: ^5.15.0
 
 dev_dependencies:
   flutter_test:

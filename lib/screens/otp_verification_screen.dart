@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import '../utils/app_colors.dart';
@@ -127,7 +128,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     end: Alignment.bottomCenter,
                     colors: [
                       AppColors.primary,
-                      AppColors.primary.withOpacity(0.8),
+                      AppColors.primary.withValues(alpha: 0.8),
                     ],
                   ),
                   borderRadius: const BorderRadius.only(
@@ -162,7 +163,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                             width: 100,
                             height: 100,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
+                              color: Colors.white.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -188,7 +189,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       'We\'ve sent a 6-digit code to',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -217,7 +218,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     borderRadius: BorderRadius.circular(25),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
+                        color: Colors.black.withValues(alpha: 0.08),
                         blurRadius: 20,
                         offset: const Offset(0, 5),
                       ),
@@ -246,65 +247,68 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
                       // OTP Boxes
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: List.generate(6, (index) {
-                          return SizedBox(
-                            width: 48,
-                            height: 55,
-                            child: RawKeyboardListener(
-                              focusNode: FocusNode(),
-                              onKey: (event) {
-                                if (event is RawKeyDownEvent &&
-                                    event.logicalKey ==
-                                        LogicalKeyboardKey.backspace &&
-                                    _otpControllers[index].text.isEmpty &&
-                                    index > 0) {
-                                  _otpControllers[index - 1].clear();
-                                  _otpFocusNodes[index - 1].requestFocus();
-                                }
-                              },
-                              child: TextField(
-                                controller: _otpControllers[index],
-                                focusNode: _otpFocusNodes[index],
-                                textAlign: TextAlign.center,
-                                keyboardType: TextInputType.number,
-                                maxLength: 1,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
-                                ),
-                                decoration: InputDecoration(
-                                  counterText: '',
-                                  contentPadding: EdgeInsets.zero,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: AppColors.border,
-                                      width: 1.5,
+                          return Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 3),
+                              child: SizedBox(
+                                height: 55,
+                                child: KeyboardListener(
+                                  focusNode: FocusNode(),
+                                  onKeyEvent: (event) {
+                                    if (event is KeyDownEvent &&
+                                        event.logicalKey ==
+                                            LogicalKeyboardKey.backspace &&
+                                        _otpControllers[index].text.isEmpty &&
+                                        index > 0) {
+                                      _otpControllers[index - 1].clear();
+                                      _otpFocusNodes[index - 1].requestFocus();
+                                    }
+                                  },
+                                  child: TextField(
+                                    controller: _otpControllers[index],
+                                    focusNode: _otpFocusNodes[index],
+                                    textAlign: TextAlign.center,
+                                    keyboardType: TextInputType.number,
+                                    maxLength: 1,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textPrimary,
                                     ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: AppColors.primary,
-                                      width: 2,
+                                    decoration: InputDecoration(
+                                      counterText: '',
+                                      contentPadding: EdgeInsets.zero,
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide(
+                                          color: AppColors.border,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: const BorderSide(
+                                          color: AppColors.primary,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      filled: true,
+                                      fillColor: AppColors.background,
                                     ),
+                                    onChanged: (value) {
+                                      if (value.isNotEmpty && index < 5) {
+                                        _otpFocusNodes[index + 1].requestFocus();
+                                      }
+                                      if (value.isEmpty && index > 0) {
+                                        _otpFocusNodes[index - 1].requestFocus();
+                                      }
+                                      if (_otpCode.length == 6) {
+                                        _verifyOtp();
+                                      }
+                                    },
                                   ),
-                                  filled: true,
-                                  fillColor: AppColors.background,
                                 ),
-                                onChanged: (value) {
-                                  if (value.isNotEmpty && index < 5) {
-                                    _otpFocusNodes[index + 1].requestFocus();
-                                  }
-                                  if (value.isEmpty && index > 0) {
-                                    _otpFocusNodes[index - 1].requestFocus();
-                                  }
-                                  if (_otpCode.length == 6) {
-                                    _verifyOtp();
-                                  }
-                                },
                               ),
                             ),
                           );
@@ -321,12 +325,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
-                            disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+                            disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15),
                             ),
                             elevation: 5,
-                            shadowColor: AppColors.primary.withOpacity(0.3),
+                            shadowColor: AppColors.primary.withValues(alpha: 0.3),
                           ),
                           child: _isLoading
                               ? const SizedBox(
@@ -349,32 +353,35 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       const SizedBox(height: 20),
 
                       // Resend OTP
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Didn\'t receive the code? ',
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: _resendSeconds == 0 ? _resendOtp : null,
-                            child: Text(
-                              _resendSeconds > 0
-                                  ? 'Resend in ${_resendSeconds}s'
-                                  : 'Resend OTP',
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Didn\'t receive the code? ',
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: _resendSeconds > 0
-                                    ? AppColors.textHint
-                                    : AppColors.primary,
+                                color: AppColors.textSecondary,
                               ),
                             ),
-                          ),
-                        ],
+                            GestureDetector(
+                              onTap: _resendSeconds == 0 ? _resendOtp : null,
+                              child: Text(
+                                _resendSeconds > 0
+                                    ? 'Resend in ${_resendSeconds}s'
+                                    : 'Resend OTP',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: _resendSeconds > 0
+                                      ? AppColors.textHint
+                                      : AppColors.primary,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

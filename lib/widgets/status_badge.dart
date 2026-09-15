@@ -16,13 +16,13 @@ class StatusBadge extends StatelessWidget {
   Color _getBackgroundColor() {
     switch (type) {
       case BadgeType.success:
-        return const Color(0xFF22C55E).withOpacity(0.1);
+        return const Color(0xFF22C55E).withValues(alpha: 0.1);
       case BadgeType.warning:
-        return const Color(0xFFF59E0B).withOpacity(0.1);
+        return const Color(0xFFF59E0B).withValues(alpha: 0.1);
       case BadgeType.error:
-        return const Color(0xFFEF4444).withOpacity(0.1);
+        return const Color(0xFFEF4444).withValues(alpha: 0.1);
       case BadgeType.info:
-        return const Color(0xFF3B82F6).withOpacity(0.1);
+        return const Color(0xFF3B82F6).withValues(alpha: 0.1);
     }
   }
 
