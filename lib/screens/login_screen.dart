@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../utils/app_colors.dart';
+import 'otp_verification_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,15 +12,54 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  bool _obscurePassword = true;
-  bool _rememberMe = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
+  }
+
+  bool _isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
+  void _sendOtp() {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      _showError('Please enter your email address');
+      return;
+    }
+    if (!_isValidEmail(email)) {
+      _showError('Please enter a valid email address');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    // Simulate sending OTP
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => OtpVerificationScreen(email: email),
+        ),
+      );
+    });
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message, style: GoogleFonts.poppins()),
+        backgroundColor: Colors.red.shade400,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
   }
 
   @override
@@ -50,7 +90,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: Column(
                   children: [
-                    // Logo
                     Container(
                       width: 100,
                       height: 100,
@@ -81,7 +120,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 25),
-                    // Welcome Text
                     Text(
                       'Welcome Back!',
                       style: GoogleFonts.poppins(
@@ -92,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Log in to manage your tenancy and payments.',
+                      'Enter your email to receive a verification OTP.',
                       style: GoogleFonts.poppins(
                         fontSize: 15,
                         color: Colors.white.withOpacity(0.9),
@@ -124,7 +162,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Email Field
                       Text(
                         'Email Address',
                         style: GoogleFonts.poppins(
@@ -169,142 +206,40 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 30),
 
-                      // Password Field
-                      Text(
-                        'Password',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.background,
-                          borderRadius: BorderRadius.circular(15),
-                          border: Border.all(
-                            color: AppColors.border,
-                            width: 1,
-                          ),
-                        ),
-                        child: TextField(
-                          controller: _passwordController,
-                          obscureText: _obscurePassword,
-                          style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            color: AppColors.textPrimary,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Enter your password',
-                            hintStyle: GoogleFonts.poppins(
-                              color: AppColors.textHint,
-                              fontSize: 14,
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.lock_outline_rounded,
-                              color: AppColors.textHint,
-                              size: 22,
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined,
-                                color: AppColors.textHint,
-                                size: 22,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 15),
-
-                      // Remember Me & Forgot Password
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Checkbox(
-                                  value: _rememberMe,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _rememberMe = value ?? false;
-                                    });
-                                  },
-                                  activeColor: AppColors.primary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Remember Me',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              // Handle forgot password
-                            },
-                            child: Text(
-                              'Forgot Password?',
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 25),
-
-                      // Login Button
+                      // Send OTP Button
                       SizedBox(
                         width: double.infinity,
                         height: 55,
                         child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushReplacementNamed(context, '/dashboard');
-                          },
+                          onPressed: _isLoading ? null : _sendOtp,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
+                            disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(15),
                             ),
                             elevation: 5,
                             shadowColor: AppColors.primary.withOpacity(0.3),
                           ),
-                          child: Text(
-                            'Login',
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : Text(
+                                  'Send OTP',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
@@ -325,9 +260,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: Center(
                     child: TextButton(
-                      onPressed: () {
-                        // Handle contact admin
-                      },
+                      onPressed: () {},
                       child: Text(
                         'Need Help? Contact Property Admin',
                         style: GoogleFonts.poppins(
